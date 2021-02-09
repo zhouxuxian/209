@@ -52,11 +52,11 @@ public class Test {
     }
 
     /**
-     * 更新一个学生
+     * 更新一个不存在的学生
      */
     @org.junit.jupiter.api.Test
     public void test5(){
-        Student newStudent = new Student(4,"efg","女",5);
+        Student newStudent = new Student(10086,"efg","女",5);
         studentDao.update(newStudent);
 
     }
@@ -66,7 +66,7 @@ public class Test {
      */
     @org.junit.jupiter.api.Test
     public void test6(){
-        Teacher newTeacher = new Teacher(1,"zzzy",1);
+        Teacher newTeacher = new Teacher(2,"zzy",2);
         teacherDao.update(newTeacher);
     }
 

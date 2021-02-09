@@ -4,11 +4,14 @@ import com.domain.Teacher;
 import com.util.JdbcUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
 
 public class TeacherDao {
-    private JdbcTemplate jdbcTemplate = new JdbcTemplate(JdbcUtils.getDataSource());
+    private JdbcTemplate jdbcTemplate = JdbcUtils.getJdbcTemplate();
+    private DataSourceTransactionManager transactionManager = JdbcUtils.transactionManager(jdbcTemplate);
 
     public List<Teacher> findAll(){
         String sql = "select * from teacherInfo";
@@ -26,10 +29,32 @@ public class TeacherDao {
     }
 
 
+    public Teacher findById(int id){
+        String sql = "select * from teacherInfo where id = ?";
+        Teacher teacher = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Teacher.class), id);
+        return teacher;
+
+    }
 
     public void update(Teacher teacher){
-        String sql = "update teacherInfo set name =?,classId=? where id=?";
-        jdbcTemplate.update(sql,teacher.getName(),teacher.getClassId(),teacher.getId());
+        TransactionStatus transactionStatus = null;
+        try {
+             transactionStatus = JdbcUtils.beginTransaction(transactionManager);
+            if (findById(teacher.getId())==null){
+                throw new Exception();
+            }
+            String sql = "update teacherInfo set name =?,classId=? where id=?";
+            jdbcTemplate.update(sql,teacher.getName(),teacher.getClassId(),teacher.getId());
+
+            JdbcUtils.commitTransaction(transactionManager,transactionStatus);
+        }catch (Exception e){
+            System.out.println();
+            System.err.println("不存在此人,更新失败");
+            JdbcUtils.rollbackTransaction(transactionManager,transactionStatus);
+        }
+
+
+
     }
 
 
